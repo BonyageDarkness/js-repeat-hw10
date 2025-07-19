@@ -16,7 +16,13 @@ const options = {
   onClose(selectedDates) {
     if (selectedDates[0].getTime() < Date.now()) {
       dataStart.setAttribute('disabled', 'disabled');
-      return alert('Please choose a date in the future');
+      iziToast.error({
+        message: 'Please choose a date in the future',
+        zindex: 999,
+        position: 'topCenter',
+        color: 'red',
+      });
+      return;
     } else {
       dataStart.removeAttribute('disabled');
     }
@@ -34,15 +40,31 @@ dataStart.addEventListener('click', () => {
     const delta = userSelectedDate - Date.now();
 
     if (delta <= 0) {
-      return clearInterval(interval);
+      clearInterval(interval);
       dataStart.removeAttribute('disabled');
       datetimePicker.removeAttribute('disabled');
-    } else {
-      convertMs(delta.data - days);
+      iziToast.show({
+        message: 'TIMER IS DONE',
+        zindex: 999,
+        position: 'topCenter',
+        color: 'blue',
+      });
+      return;
     }
+    const { seconds, minutes, hours, days } = convertMs(delta);
+    document.querySelector('[data-days]').textContent = addLeadingZero(days);
+    document.querySelector('[data-hours]').textContent = addLeadingZero(hours);
+    document.querySelector('[data-minutes]').textContent =
+      addLeadingZero(minutes);
+    document.querySelector('[data-seconds]').textContent =
+      addLeadingZero(seconds);
     console.log(delta);
   }, 1000);
 });
+
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
+}
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -66,8 +88,3 @@ function convertMs(ms) {
 console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
 console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
 console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
-
-iziToast.show({
-  title: 'Hey',
-  message: 'What would you like to add?',
-});
